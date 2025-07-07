@@ -34,7 +34,9 @@ from typing import Dict, List, Any
 import torch
 import zmq
 from datasets import Dataset as HFDataset
-from peft import LoraConfig, get_peft_model
+import sys
+sys.path.append("../../../../lora/LoRAMoE/peft/tuners")
+from lora import Loraodel, LoraConfig  # LoRAMoE
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -249,11 +251,16 @@ def main():
                 ds = HFDataset.from_list(rows)
                 collator = DataCollatorWithPadding(tokenizer)
 
-                lora_cfg = LoraConfig(
-                    r=lora_rank, lora_alpha=lora_alpha,
-                    lora_dropout=lora_dropout, task_type="CAUSAL_LM"
+
+                # use LoRAMoE adapter instead of vanilla LoRA
+                lora_config = LoraConfig(
+                    r=lora_rank,
+                    lora_alpha=lora_alpha,
+                    lora_nums=4,  # number of experts
+                    lora_dropout=lora_dropout,
+                    target_modules=["q_proj", "v_proj"],  # adapt query and value projections
                 )
-                lora_model = get_peft_model(base_model, lora_cfg)
+                lora_model = LoraModel(lora_config, base_model)
 
                 trainer = Trainer(
                     model=lora_model,
