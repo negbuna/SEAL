@@ -36,7 +36,7 @@ import zmq
 from datasets import Dataset as HFDataset
 import sys
 sys.path.append("../../../../lora/LoRAMoE/peft/tuners")
-from lora import Loraodel, LoraConfig  # LoRAMoE
+from lora import LoraModel, LoraConfig  # LoRAMoE
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
